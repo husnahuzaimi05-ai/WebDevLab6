@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Book Records</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .book-details {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .book-details p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        #message {
+            color: red;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Library Book Lookup</h2>
+    
+    <label for="bookSelect">Select Book Title:</label>
+    <select id="bookSelect">
+        <option value="">-- Choose a Book --</option>
+    </select>
+
+    <div id="bookDetails" class="book-details" style="display: none;">
+        <h3>Book Information</h3>
+        <p><strong>Title:</strong> <span id="displayTitle"></span></p>
+        <p><strong>Author:</strong> <span id="displayAuthor"></span></p>
+        <p><strong>Publication Year:</strong> <span id="displayYear"></span></p>
+        <p><strong>Genre:</strong> <span id="displayGenre"></span></p>
+    </div>
+    
+    <p id="message"></p>
+</div>
+
+<script>
+    const jsonUrl = 'https://raw.githubusercontent.com/husnahuzaimi05-ai/WebDevLab6/refs/heads/main/books.json';
+
+    let booksData = [];
+
+    fetch(jsonUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch JSON data from GitHub.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            booksData = data.books || data;
+            populateDropdown(booksData);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('message').textContent = 'Error loading book records from GitHub.';
+        });
+
+    function populateDropdown(books) {
+        const selectElement = document.getElementById('bookSelect');
+        books.forEach((book, index) => {
+            const option = document.createElement('option');
+            option.value = index; 
+            option.textContent = book.title;
+            selectElement.appendChild(option);
+        });
+    }
+
+    document.getElementById('bookSelect').addEventListener('change', function() {
+        const selectedIndex = this.value;
+        const detailsDiv = document.getElementById('bookDetails');
+        const messageElement = document.getElementById('message');
+
+        if (selectedIndex === "") {
+            detailsDiv.style.display = 'none';
+            messageElement.textContent = '';
+            return;
+        }
+
+        const book = booksData[selectedIndex];
+
+        if (book) {
+            document.getElementById('displayTitle').textContent = book.title;
+            document.getElementById('displayAuthor').textContent = book.author;
+            document.getElementById('displayYear').textContent = book.publicationYear || book.publication_year || book.year;
+            document.getElementById('displayGenre').textContent = Array.isArray(book.genres) ? book.genres.join(', ') : book.genre || '';
+
+            detailsDiv.style.display = 'block';
+            messageElement.textContent = '';
+        } else {
+            detailsDiv.style.display = 'none';
+            messageElement.textContent = 'Selected book record not found.';
+        }
+    });
+</script>
+
+</body>
+</html>
